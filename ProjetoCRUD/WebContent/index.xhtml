@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+<h:head>
+  <title>Projeto CRUD</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</h:head>
+<h:body>
+	<h2>Cadastro de Usuários</h2>
+	<h:form>
+		
+	</h:form>
+	<h2>Lista de Usuarios</h2>
+	<h:dataTable value="#{usuarioController.list}" var="item" border="1" rendered="#{usuarioController.list.size > 0}">
+		<h:column>
+			<f:facet name="header"><h:outputText value="Login"/></f:facet>
+			<h:outputText value="#{item.login}"/>
+		</h:column>
+		<h:column>
+			<f:facet name="header"><h:outputText value="Senha"/></f:facet>
+			<h:outputText value="#{item.senha}"/>
+		</h:column>
+		<h:column>
+			<f:facet name="header"><h:outputText value="Nome"/></f:facet>
+			<h:outputText value="#{item.nome}"/>
+		</h:column>
+		<h:column>
+			<f:facet name="header"><h:outputText value="Idade"/></f:facet>
+			<h:outputText value="#{item.idade}"/>
+		</h:column>
+		<h:column>
+			<f:facet name="header"><h:outputText value="Editar"/></f:facet>
+			<h:form>
+				<h:commandLink value="Editar" action="" styleClass="btn btn-sm"/>
+			</h:form>
+		</h:column>
+		<h:column>
+			<f:facet name="header"><h:outputText value="Excluir"/></f:facet>
+			<h:form>
+				<h:commandLink value="Excluir" onclick="if (!confirm('Você tem certeza que deseja excluir este usuário?')) {
+					return false
+				}" action="" styleClass="btn btn-sm"/>
+			</h:form>
+		</h:column>
+	</h:dataTable>
+	<i><h:outputText value="Nenhum usuário cadastrado" rendered="#{usuarioController.list.lize() == 0}"/></i>
+</h:body>
+
+</html>
