@@ -1,9 +1,13 @@
 package br.utfpr.formularios.ui;
 
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.PWA;
 
 /**
@@ -28,9 +32,18 @@ import com.vaadin.flow.server.PWA;
 public class MainView extends VerticalLayout {
 
     public MainView() {
-        HorizontalLayout tabs = new HorizontalLayout();
+        H1 mainTitle = new H1("Sistema de cadastro de Produtos");
+        setSizeFull();
 
-        add(tabs);
+        add(mainTitle,
+            createTabs());
+    }
+
+    private Tab createTabs() {
+        Tab tabs = new Tab();
+        tabs.add(new RouterLink("Cadastrar/Editar Produto", ProdutoForm.class));
+        tabs.add(new RouterLink("Visualizar Produtos", ProdutoList.class));
+        return tabs;
     }
 
 }
