@@ -2,8 +2,6 @@ package br.utfpr.formularios.ui;
 
 import br.utfpr.formularios.model.Produto;
 import br.utfpr.formularios.services.ProdutoService;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -14,17 +12,14 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.*;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.shared.Registration;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Locale;
 
 @Route("produtos/cadastro/")
 public class ProdutoForm extends FormLayout {
@@ -32,7 +27,7 @@ public class ProdutoForm extends FormLayout {
     private TextArea descricaoProdutoTextArea = new TextArea("Descrição do produto");
     private TextField fornecedorTextField = new TextField("Fornecedor");
     private EmailField fornecedorEmailField = new EmailField("E-mail do fornecedor");
-    private DatePicker dataUtimaCompra = new DatePicker("Última compra");
+    private DatePicker dataUltimaCompra = new DatePicker("Última compra");
     private BigDecimalField precoDecimalField = new BigDecimalField("Preço");
     private ComboBox<Produto.Status> statusComboBox = new ComboBox<>("Status");
 
@@ -40,11 +35,17 @@ public class ProdutoForm extends FormLayout {
     private Button excluirButton = new Button("Excluir");
     private Button cancelarButton = new Button("Cancelar");
 
+    private Binder<Produto> binder = new Binder<>(Produto.class);
 
     private ProdutoService service;
 
-    public ProdutoForm(@Autowired ProdutoService service) {
+    private MainView mainView;
+
+    public ProdutoForm(MainView mainView, ProdutoService service) {
+        this.mainView = mainView;
         this.service = service;
+
+        binder.bindInstanceFields(this);
 
         configureComponents();
 
@@ -52,12 +53,11 @@ public class ProdutoForm extends FormLayout {
             descricaoProdutoTextArea,
             fornecedorTextField,
             fornecedorEmailField,
-            dataUtimaCompra,
+                dataUltimaCompra,
             precoDecimalField,
             statusComboBox,
             createButtonsLayout());
     }
-
 
     private void configureComponents() {
         nomeProdutoTextField.setErrorMessage("O nome do produto deve ser informado");
@@ -72,9 +72,10 @@ public class ProdutoForm extends FormLayout {
         precoDecimalField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
         precoDecimalField.setPrefixComponent(new Icon(VaadinIcon.DOLLAR));
 
-        dataUtimaCompra.setAutoOpen(true);
-        dataUtimaCompra.setMin(LocalDate.now().minusMonths(1L));
-        dataUtimaCompra.setMax(LocalDate.now());
+        dataUltimaCompra.setAutoOpen(true);
+        dataUltimaCompra.setLocale(new Locale("pt", "BR"));
+        dataUltimaCompra.setMin(LocalDate.now().minusMonths(1L));
+        dataUltimaCompra.setMax(LocalDate.now());
     }
 
     private HorizontalLayout createButtonsLayout() {
@@ -101,7 +102,7 @@ public class ProdutoForm extends FormLayout {
         String nome = nomeProdutoTextField.getValue();
         String descricao = descricaoProdutoTextArea.getValue();
         BigDecimal preco = precoDecimalField.getValue();
-        Date dataUltimaCompra = Date.from(dataUtimaCompra.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date dataUltimaCompra = Date.from(this.dataUltimaCompra.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant());
         String emailFornecedor = fornecedorEmailField.getValue();
         String fornecedor = fornecedorTextField.getValue();
         Produto.Status status = statusComboBox.getValue();
@@ -116,5 +117,23 @@ public class ProdutoForm extends FormLayout {
                 .fornecedor(fornecedor)
                 .status(status)
                 .build();
+    }
+
+    private void setProduto(Produto produto) {
+        binder.setBean(produto);
+
+        if(produto == null) {
+            setVisible(false);
+        } else {
+            setVisible(false);
+            if (binder.getBean())
+        }
+    }
+
+    private void addProduto() {
+        Produto produto = binder.getBean();
+        service.save(produto);
+        mainView.updateList();
+        setProduto(null);
     }
 }
