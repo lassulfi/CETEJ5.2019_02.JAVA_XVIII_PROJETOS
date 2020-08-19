@@ -4,42 +4,40 @@ import br.utfpr.formularios.model.Produto;
 import br.utfpr.formularios.services.ProdutoService;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.router.Route;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Route("produtos/lista/")
 public class ProdutoList extends VerticalLayout {
 
-    private Grid<Produto> grid = new Grid<>(Produto.class);
-    private TextField filterTextField = new TextField();
+    private Grid<Produto> mGrid = new Grid<>(Produto.class);
+    private MainView mMainView;
+    
+    private final ProdutoService mProdutoService;
 
-    private final ProdutoService service;
+    public ProdutoList(MainView mainView, @Autowired ProdutoService service) {
+        this.mMainView = mainView;
+        this.mProdutoService = service;
 
-    public ProdutoList(ProdutoService service) {
-        this.service = service;
         configureGrid();
-        configureTextField();
 
-        add(filterTextField, grid);
-        updateList();
+        add(mGrid);
     }
 
-    private void configureTextField() {
-        filterTextField.setPlaceholder("Filtrar por nome do produto");
-        filterTextField.setClearButtonVisible(true);
-        filterTextField.setValueChangeMode(ValueChangeMode.LAZY);
-        filterTextField.addValueChangeListener(e -> updateList());
+    public void updateList(String filteredText) {
+        mGrid.setItems(mProdutoService.findAll(filteredText));
     }
 
-    private void updateList() {
-        grid.setItems(service.findAll(filterTextField.getValue()));
+    public Produto getSelectedItem() {
+        return this.mGrid.asSingleSelect().getValue();
+    }
+
+    public void clearSelection() {
+        this.mGrid.asSingleSelect().clear();
     }
 
     private void configureGrid() {
-        grid.setSizeFull();
-        grid.setColumns("nome", "fornecedor", "preco", "dataUltimaCompra", "status");
-
-        grid.getColumns().forEach(col -> col.setAutoWidth(true));
+        mGrid.setSizeFull();
+        mGrid.setColumns("nome", "fornecedor", "preco", "dataUltimaCompra", "status");
+        mGrid.getColumns().forEach(col -> col.setAutoWidth(true));
+        mGrid.asSingleSelect().addValueChangeListener(evt -> mMainView.setProduto());
     }
 }

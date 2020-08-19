@@ -1,14 +1,19 @@
 package br.utfpr.formularios.ui;
 
+import br.utfpr.formularios.model.Produto;
+import br.utfpr.formularios.services.ProdutoService;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
-import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.PWA;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * A sample Vaadin view class.
@@ -30,20 +35,65 @@ import com.vaadin.flow.server.PWA;
 @CssImport("./styles/shared-styles.css")
 @CssImport(value = "./styles/vaadin-text-field-styles.css", themeFor = "vaadin-text-field")
 public class MainView extends VerticalLayout {
+    private ProdutoForm mProdutoForm;
+    private ProdutoList mProdutoList;
 
-    public MainView() {
-        H1 mainTitle = new H1("Sistema de cadastro de Produtos");
+    private TextField filterTextField = new TextField();
+    private Button newProdutoButton = new Button("Novo produto");
+
+    private ProdutoService mProdutoService;
+
+
+    public MainView(@Autowired ProdutoService produtoService) {
+        this.mProdutoService = produtoService;
+
+        this.mProdutoForm = new ProdutoForm(this, produtoService);
+        this.mProdutoForm.setProduto(null);
+
+        this.mProdutoList = new ProdutoList(this, produtoService);
+
+        updateList();
+
         setSizeFull();
 
+        configureTextField();
+
+        newProdutoButton.addClickListener(click -> addNewProduto());
+
+        H1 mainTitle = new H1("Sistema de cadastro de Produtos");
+
+        HorizontalLayout mainContentLayout = new HorizontalLayout(mProdutoList, mProdutoForm);
+        mainContentLayout.setSizeFull();
+
+        HorizontalLayout filterLayout = new HorizontalLayout(filterTextField, newProdutoButton);
+
         add(mainTitle,
-            createTabs());
+            filterLayout,
+            mainContentLayout);
     }
 
-    private Tab createTabs() {
-        Tab tabs = new Tab();
-        tabs.add(new RouterLink("Cadastrar/Editar Produto", ProdutoForm.class));
-        tabs.add(new RouterLink("Visualizar Produtos", ProdutoList.class));
-        return tabs;
+    public void updateList() {
+        this.mProdutoList.updateList(filterTextField.getValue());
     }
 
+    public void setProduto() {
+        this.mProdutoForm.setProduto(this.mProdutoList.getSelectedItem());
+    }
+
+    public void clearSelection() {
+        this.mProdutoList.clearSelection();
+        this.mProdutoForm.setProduto(null);
+    }
+
+    private void addNewProduto() {
+        this.mProdutoList.clearSelection();
+        this.mProdutoForm.setProduto(new Produto());
+    }
+
+    private void configureTextField() {
+        filterTextField.setPlaceholder("Filtrar por nome do produto");
+        filterTextField.setClearButtonVisible(true);
+        filterTextField.setValueChangeMode(ValueChangeMode.EAGER);
+        filterTextField.addValueChangeListener(e -> updateList());
+    }
 }

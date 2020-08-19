@@ -2,8 +2,7 @@ package br.utfpr.formularios.ui;
 
 import br.utfpr.formularios.model.Produto;
 import br.utfpr.formularios.services.ProdutoService;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
+import br.utfpr.formularios.ui.components.ConfirmationDialog;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -16,37 +15,34 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.*;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.shared.Registration;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.util.Locale;
 
-@Route("produtos/cadastro/")
 public class ProdutoForm extends FormLayout {
-    private TextField nomeProdutoTextField = new TextField("Nome do produto");
-    private TextArea descricaoProdutoTextArea = new TextArea("Descrição do produto");
-    private TextField fornecedorTextField = new TextField("Fornecedor");
-    private EmailField fornecedorEmailField = new EmailField("E-mail do fornecedor");
-    private DatePicker dataUtimaCompra = new DatePicker("Última compra");
-    private BigDecimalField precoDecimalField = new BigDecimalField("Preço");
+    private TextField nome = new TextField("Nome do produto");
+    private TextArea descricao = new TextArea("Descrição do produto");
+    private TextField fornecedor = new TextField("Fornecedor");
+    private EmailField emailFornecedor = new EmailField("E-mail do fornecedor");
+    private DatePicker dataUltimaCompra = new DatePicker("Última compra");
+    private BigDecimalField preco = new BigDecimalField("Preço");
     private ComboBox<Produto.Status> status = new ComboBox<>("Status");
 
     private Button cadastrarButton = new Button("Cadastrar");
     private Button excluirButton = new Button("Excluir");
     private Button cancelarButton = new Button("Cancelar");
 
-    private Binder<Produto> binder = new BeanValidationBinder<>(Produto.class);
-    private Produto produto;
+    private ConfirmationDialog confirmationDialog = new ConfirmationDialog();
 
-    private MainView mainView;
-    private ProdutoService produtoService;
+    private Binder<Produto> binder = new BeanValidationBinder<>(Produto.class);
+
+    private MainView mMainView;
+    private ProdutoService mProdutoService;
 
     public ProdutoForm(MainView mainView, @Autowired ProdutoService produtoService) {
-        this.mainView = mainView;
-        this.produtoService = produtoService;
+        this.mMainView = mainView;
+        this.mProdutoService = produtoService;
 
         binder.bindInstanceFields(this);
         status.setItems(Produto.Status.values());
@@ -54,12 +50,12 @@ public class ProdutoForm extends FormLayout {
         configurePrecoField();
         configureDataUltimaCompraField();
 
-        add(nomeProdutoTextField,
-            descricaoProdutoTextArea,
-            fornecedorTextField,
-            fornecedorEmailField,
-            dataUtimaCompra,
-            precoDecimalField,
+        add(nome,
+                descricao,
+                fornecedor,
+                emailFornecedor,
+                dataUltimaCompra,
+                preco,
             status,
             createButtonsLayout());
     }
@@ -75,20 +71,20 @@ public class ProdutoForm extends FormLayout {
             } else {
                 excluirButton.setVisible(false);
             }
-            nomeProdutoTextField.focus();
+            nome.focus();
         }
     }
 
     private void configurePrecoField() {
-        precoDecimalField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
-        precoDecimalField.setPrefixComponent(new Icon(VaadinIcon.DOLLAR));
+        preco.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        preco.setPrefixComponent(new Icon(VaadinIcon.DOLLAR));
     }
 
     private void configureDataUltimaCompraField() {
-        dataUtimaCompra.setAutoOpen(true);
-        dataUtimaCompra.setLocale(new Locale("pt", "BR"));
-        dataUtimaCompra.setMin(LocalDate.now().minusMonths(1L));
-        dataUtimaCompra.setMax(LocalDate.now());
+        dataUltimaCompra.setAutoOpen(true);
+        dataUltimaCompra.setLocale(new Locale("pt", "BR"));
+        dataUltimaCompra.setMin(LocalDate.now().minusMonths(1L));
+        dataUltimaCompra.setMax(LocalDate.now());
     }
 
     private HorizontalLayout createButtonsLayout() {
@@ -100,21 +96,26 @@ public class ProdutoForm extends FormLayout {
         cancelarButton.addClickShortcut(Key.ESCAPE);
 
         cadastrarButton.addClickListener(click -> save());
-        excluirButton.addClickListener(click -> fireEvent(new DeleteEvent(this, produto)));
-        cancelarButton.addClickListener(click -> fireEvent(new CancelEvent(this)));
+        excluirButton.addClickListener(click -> delete());
+        cancelarButton.addClickListener(click -> mMainView.clearSelection());
 
         return new HorizontalLayout(cadastrarButton, excluirButton, cancelarButton);
     }
 
     private void save() {
         Produto produto = binder.getBean();
-        produtoService.save(produto);
-        mainView.updateList();
+        mProdutoService.save(produto);
+        mMainView.updateList();
         setProduto(null);
     }
 
     private void delete() {
         Produto produto = binder.getBean();
-
+        confirmationDialog.setQuestion("Excluir o produto " + produto.getNome() + "?");
+        confirmationDialog.open();
+        confirmationDialog.addConfirmationListener(evt -> {
+            this.mProdutoService.delete(produto.getId());
+            this.mMainView.updateList();
+        });
     }
 }
