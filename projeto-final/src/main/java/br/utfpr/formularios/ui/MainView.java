@@ -15,18 +15,6 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.PWA;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/**
- * A sample Vaadin view class.
- * <p>
- * To implement a Vaadin view just extend any Vaadin component and
- * use @Route annotation to announce it in a URL as a Spring managed
- * bean.
- * Use the @PWA annotation make the application installable on phones,
- * tablets and some desktop browsers.
- * <p>
- * A new instance of this class is created for every new user and every
- * browser tab/window.
- */
 @Route
 @PWA(name = "Sistema de Cadastro de Produtos",
         shortName = "Cadastro de Produtos",
@@ -52,10 +40,6 @@ public class MainView extends VerticalLayout {
 
         this.mProdutoList = new ProdutoList(this, produtoService);
 
-        updateList();
-
-        setSizeFull();
-
         configureTextField();
 
         newProdutoButton.addClickListener(click -> addNewProduto());
@@ -65,11 +49,13 @@ public class MainView extends VerticalLayout {
         HorizontalLayout mainContentLayout = new HorizontalLayout(mProdutoList, mProdutoForm);
         mainContentLayout.setSizeFull();
 
+        updateList();
         HorizontalLayout filterLayout = new HorizontalLayout(filterTextField, newProdutoButton);
 
         add(mainTitle,
             filterLayout,
             mainContentLayout);
+        setSizeFull();
     }
 
     public void updateList() {

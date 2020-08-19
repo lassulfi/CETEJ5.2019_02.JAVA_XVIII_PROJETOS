@@ -10,7 +10,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -45,7 +45,7 @@ public class Produto {
     private String emailFornecedor;
 
     @Column(name="data_ultima_compra", nullable=false)
-    private Date dataUltimaCompra;
+    private LocalDate dataUltimaCompra;
 
     @Column(name="preco", nullable=false)
     @Min(0)

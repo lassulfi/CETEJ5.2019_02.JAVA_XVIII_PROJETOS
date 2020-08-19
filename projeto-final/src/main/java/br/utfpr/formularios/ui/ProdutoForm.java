@@ -29,7 +29,7 @@ public class ProdutoForm extends FormLayout {
     private BigDecimalField preco = new BigDecimalField("Preço");
     private ComboBox<Produto.Status> status = new ComboBox<>("Status");
 
-    private Button cadastrarButton = new Button("Cadastrar");
+    private Button cadastrarButton = new Button();
     private Button excluirButton = new Button("Excluir");
     private Button cancelarButton = new Button("Cancelar");
 
@@ -51,11 +51,11 @@ public class ProdutoForm extends FormLayout {
         configureDataUltimaCompraField();
 
         add(nome,
-                descricao,
-                fornecedor,
-                emailFornecedor,
-                dataUltimaCompra,
-                preco,
+            descricao,
+            fornecedor,
+            emailFornecedor,
+            dataUltimaCompra,
+            preco,
             status,
             createButtonsLayout());
     }
@@ -67,8 +67,10 @@ public class ProdutoForm extends FormLayout {
         } else {
             setVisible(true);
             if(binder.getBean().isPersisted()) {
+                cadastrarButton.setText("Atualizar");
                 excluirButton.setVisible(true);
             } else {
+                cadastrarButton.setText("Cadastrar");
                 excluirButton.setVisible(false);
             }
             nome.focus();
@@ -104,7 +106,11 @@ public class ProdutoForm extends FormLayout {
 
     private void save() {
         Produto produto = binder.getBean();
-        mProdutoService.save(produto);
+        if (produto.getId() == null) {
+            mProdutoService.save(produto);
+        } else {
+            mProdutoService.update(produto);
+        }
         mMainView.updateList();
         setProduto(null);
     }
